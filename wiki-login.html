@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+// server url
+url = "http://localhost/rt/wiki/api.php";
+rturl = "http://www.ibm.com";
+
+
+function wikiLogin()
+{
+	var username = $('#username').val();
+	var password = $("#password").val();
+	return loginRequest(username,password);
+}
+function loginRequest(username,password)
+{
+	var token = null;
+	// send post to to get token
+	$.post(url, "action=query&meta=tokens&type=login&format=json", function(result) 
+	{
+		token = result.query.tokens.logintoken; 
+		console.log(status);
+		if (token != null)
+		{
+			token = encodeURIComponent(token);
+			$("#token").html(token);
+			console.log('send clientlogin post');
+			$.post(url, 'action=clientlogin&loginreturnurl='+rturl+'&username='+username+'&password='+password+'&logintoken='+token+'&rememberMe=1&format=json', function(result) // clientlogin			
+			{							
+				$("#result").html(result.clientlogin.status);
+				//$("#status").html(status);
+				 $("#loginuser").html(username);
+				if (result.clientlogin.status === "PASS")
+				  return true;
+				else		 
+				  return false;
+			});
+		}		
+		else
+			return false
+	});
+	return false
+}
+</script>
+</head>
+<body>
+
+<h2>Wiki Web API Login Test</h2>
+
+<form method="post" action="http://www.ibm.com">
+    <label for="uname"><b>Username: </b></label>&nbsp<input type="text" name="username" id="username" required><br/>
+	<label for="password"><b>Password: </b></label>&nbsp<input type="password" name="password" id="password" required>
+	<p>Please enter name & password: <button type="submit" onclick="return wikiLogin();">Login</button> <button type="reset" >Cancel</button></p>
+    
+</form>
+<hr>
+<p>Debug inforamtion: Token from the server, login status and user name</>
+<p><b>Token: </b><span id="token"></span>
+<p><b>User Name: </b><span id="loginuser"></span>
+<p><b>Result: </b><span id="result"></span>
+
+</body>
+</html>
